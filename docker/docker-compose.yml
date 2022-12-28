@@ -1,0 +1,13 @@
+version: '3.5'
+services:
+  database:
+    image: mysql:8.0
+    container_name: 'bakery_db'
+    environment:
+      MYSQL_ROOT_PASSWORD: bakery
+      MYSQL_DATABASE: bakery
+  app:
+    build: .././
+    container_name: 'bakery'
+    ports:
+      - "8080:8080"
