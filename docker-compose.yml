@@ -7,7 +7,7 @@ services:
       MYSQL_ROOT_PASSWORD: bakery
       MYSQL_DATABASE: bakery
   app:
-    build: .././
+    build: ./
     container_name: 'bakery'
     ports:
       - "8080:8080"

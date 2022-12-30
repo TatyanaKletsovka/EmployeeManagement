@@ -5,11 +5,7 @@
 
 > ./mvnw package
 
-2.Change directory
-
-> cd docker
-
-3.Build application image
+2.Build application image
 
 > docker-compose up -d --build
 
