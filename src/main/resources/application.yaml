@@ -1,0 +1,35 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+    defer-datasource-initialization: true
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class: com.cj.jdbc.Driver
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+# paging
+    data:
+      web:
+        pageable:
+          default-page-size: 20
+          max-page-size: 2000
+# context path config
+server:
+  servlet:
+    context-path: /api/v1
+# mail config
+bakery:
+  mail:
+    host: ${BAKERY_MAIL_HOST:smtp.gmail.com}
+    port: ${BAKERY_MAIL_PORT:587}
+    username: ${BAKERY_MAIL_USERNAME:bakery.chain.ems@gmail.com}
+    password: ${BAKERY_MAIL_PASSWORD:zxajeefhrkptbdno}
+    protocol: ${BAKERY_MAIL_PROTOCOL:smtp}
+    auth: ${BAKERY_MAIL_AUTH:true}
+    starttls: ${BAKERY_MAIL_STARTTLS:true}

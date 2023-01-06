@@ -1,0 +1,18 @@
+{
+  "firstName": "updated",
+  "lastName": "lastName",
+  "dateOfBirth": "2000-01-01",
+  "phone": "8695193049",
+  "personalEmail": "email@gmail.com",
+  "gender": "FEMALE",
+  "addressLine1": "addressLine1",
+  "addressLine2": "addressLine2",
+  "addressCountry": "addressCountry",
+  "addressState": "32",
+  "addressZip": "234242",
+  "idType": "PASSPORT",
+  "idNumber": "idNumber",
+  "citizenship": "citizenship",
+  "maritalStatus": "MARRIED",
+  "numberOfChildren": 2
+}

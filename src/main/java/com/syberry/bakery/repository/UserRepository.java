@@ -20,5 +20,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findAllByFiltering(String firstName, String lastName, String email, List<RoleName> roles, Pageable pageable);
     @Query(value = "SELECT COUNT(u.id) FROM User u inner join u.roles r where r.roleName in :roles and u.isBlocked = false")
     long countAllByBlockedIsFalseAndRoleIn(List<RoleName> roles);
-}
 
+}
