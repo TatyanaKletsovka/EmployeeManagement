@@ -5,9 +5,9 @@ spring:
     generate-ddl: true
     defer-datasource-initialization: true
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://${DB_URL}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASS}
     driver-class: com.cj.jdbc.Driver
   sql:
     init:
