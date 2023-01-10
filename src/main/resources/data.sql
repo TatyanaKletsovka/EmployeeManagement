@@ -1,1 +1,3 @@
 INSERT INTO `roles`( `role_name`) VALUES ('ROLE_ADMIN'),('ROLE_HR'),('ROLE_ACCOUNTANT'),('ROLE_USER');
+INSERT INTO `users`(`created_at`, `disabled_at`, `email`, `first_name`, `is_blocked`, `last_name`, `password`, `updated_at`, `is_2fa_enabled`) VALUES ( NOW(), null, 'admin@mail.com','admin', false,'admin','$2a$10$tXrlNyDMyREFcGhVgBz1keTK3vuXdp6dJOCjSR2uYYhLD3Nb9qF4y', null, false);
+INSERT INTO `user_roles`(`user_id`, `role_id`) VALUES (1, 1);

@@ -33,14 +33,18 @@ public class GlobalExceptionHandler extends Exception {
         return errorResponse;
     }
 
-    @ExceptionHandler({DeleteException.class, UpdateException.class, EntityNotFoundException.class, CreateException.class, InvalidRoleTypeException.class})
+    @ExceptionHandler({DeleteException.class,
+            UpdateException.class,
+            EntityNotFoundException.class,
+            CreateException.class,
+            InvalidArgumentTypeException.class})
     public final ResponseEntity<Map<String, List<String>>> customExceptionHandler(Exception ex) {
         List<String> errors = Collections.singletonList(ex.getMessage());
         return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(MailException.class)
-    public final ResponseEntity<Map<String, List<String>>> mailExceptionHandler(MailException ex) {
+    @ExceptionHandler(EmailException.class)
+    public final ResponseEntity<Map<String, List<String>>> mailExceptionHandler(EmailException ex) {
         List<String> errors = Collections.singletonList(ex.getMessage());
         return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
@@ -84,6 +88,10 @@ public class GlobalExceptionHandler extends Exception {
         List<String> errors = Collections.singletonList(ex.getMessage());
         return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
-
+    @ExceptionHandler(value = TokenRefreshException.class)
+    public ResponseEntity<Map<String, List<String>>> tokenRefreshExceptionHandler(TokenRefreshException ex) {
+        List<String> errors = Collections.singletonList(ex.getMessage());
+        return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
 }
 

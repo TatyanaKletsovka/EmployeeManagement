@@ -16,8 +16,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name="roles")
@@ -33,15 +33,13 @@ public class Role {
     private RoleName roleName;
 
     @ManyToMany(mappedBy = "roles",fetch = FetchType.EAGER,cascade = CascadeType.ALL)
-    private List<User> users = new ArrayList<>();
-    public Role(RoleName roleName){
-        this.roleName = roleName;
-    }
+    private Set<User> users = new HashSet<>();
 
     public Role(Long id, RoleName roleName) {
         this.id = id;
         this.roleName = roleName;
     }
+
 }
 
 

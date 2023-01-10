@@ -1,6 +1,8 @@
 package integrationtest;
 
 import com.syberry.bakery.BakeryApplication;
+import com.syberry.bakery.config.MailConfig;
+import com.syberry.bakery.service.EmailService;
 import integrationtest.config.H2Config;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,8 +37,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class EmployeeIntegrationTest {
     @Autowired
     MockMvc mockMvc;
+    @MockBean
+    MailConfig mailConfig;
+    @MockBean
+    EmailService emailService;
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
     void should_GetAllEmployees() throws Exception {
         mockMvc.perform(get("/employees"))
                 .andDo(print())
@@ -44,6 +53,7 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
     void should_GetEmployeeById() throws Exception {
         final File jsonFile = new ClassPathResource("json/create-user.json").getFile();
         final String userToCreate = Files.readString(jsonFile.toPath());
@@ -65,6 +75,7 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
     void should_CreateEmployee() throws Exception {
         final File jsonFile = new ClassPathResource("json/create-user.json").getFile();
         final String userToCreate = Files.readString(jsonFile.toPath());
@@ -82,6 +93,7 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
     void should_UpdateEmployee() throws Exception {
         final File jsonFile = new ClassPathResource("json/create-user.json").getFile();
         final String userToCreate = Files.readString(jsonFile.toPath());
@@ -106,6 +118,7 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
     void should_DisableEmployee() throws Exception {
         final File jsonFile = new ClassPathResource("json/create-user.json").getFile();
         final String userToCreate = Files.readString(jsonFile.toPath());

@@ -5,7 +5,7 @@ spring:
     generate-ddl: true
     defer-datasource-initialization: true
   datasource:
-    url: jdbc:mysql://${DB_URL}/${DB_NAME}
+    url: jdbc:mysql://${DB_URL}/${DB_NAME}?createDatabaseIfNotExist=true
     username: ${DB_USER}
     password: ${DB_PASS}
     driver-class: com.cj.jdbc.Driver
@@ -13,7 +13,7 @@ spring:
     init:
       mode: always
       continue-on-error: true
-# paging
+    # paging
     data:
       web:
         pageable:
@@ -23,13 +23,21 @@ spring:
 server:
   servlet:
     context-path: /api/v1
-# mail config
 bakery:
+  # mail config
   mail:
-    host: ${BAKERY_MAIL_HOST:smtp.gmail.com}
-    port: ${BAKERY_MAIL_PORT:587}
-    username: ${BAKERY_MAIL_USERNAME:bakery.chain.ems@gmail.com}
-    password: ${BAKERY_MAIL_PASSWORD:zxajeefhrkptbdno}
-    protocol: ${BAKERY_MAIL_PROTOCOL:smtp}
-    auth: ${BAKERY_MAIL_AUTH:true}
-    starttls: ${BAKERY_MAIL_STARTTLS:true}
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    protocol: ${MAIL_PROTOCOL:smtp}
+    auth: ${MAIL_AUTH:true}
+    starttls: ${MAIL_STARTTLS:true}
+  # security config
+  security:
+    jwtCookieName: accessToken
+    jwtRefreshCookieName: refreshToken
+    jwtSecret: ${JWT_SECRET:somecode}
+    jwtExpirationMs: 900000
+    jwtRefreshExpirationHr: 24
+    2faDurationMn: 5

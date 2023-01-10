@@ -1,7 +1,9 @@
 package integrationtest;
 
 import com.syberry.bakery.BakeryApplication;
+import com.syberry.bakery.config.MailConfig;
 import com.syberry.bakery.dto.RoleName;
+import com.syberry.bakery.service.EmailService;
 import integrationtest.config.H2Config;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,8 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,25 +40,46 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class RoleIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
+    @MockBean
+    private MailConfig mailConfig;
+    @MockBean
+    private EmailService emailService;
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
     void should_GetAllRoles() throws Exception {
-        mockMvc.perform(get("/roles")).andDo(print()).andExpect(status().isOk()).andExpect(jsonPath("$.size()").value(4));
+        mockMvc.perform(get("/roles"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(4));
     }
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = "ADMIN")
     void should_AddRoleToUser() throws Exception {
         final File jsonFile = new ClassPathResource("json/create-user.json").getFile();
         final String userToCreate = Files.readString(jsonFile.toPath());
-        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(userToCreate)).andDo(print()).andExpect(status().isCreated());
-        mockMvc.perform(post("/users/1/roles/" + 1)).andDo(print()).andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1)).andExpect(jsonPath("$.roles", hasItem(RoleName.ROLE_ADMIN.name())));
+        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+                .content(userToCreate)).andDo(print())
+                .andExpect(status().isCreated());
+        mockMvc.perform(post("/users/1/roles/" + 1))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.roles", hasItem(RoleName.ROLE_ADMIN.name())));
     }
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = "ADMIN")
     void should_RemoveRoleFromUser() throws Exception {
         final File jsonFile = new ClassPathResource("json/create-user-with-two-roles.json").getFile();
         final String userToCreate = Files.readString(jsonFile.toPath());
-        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(userToCreate)).andDo(print()).andExpect(status().isCreated());
-        mockMvc.perform(delete("/users/1/roles/" + 2)).andDo(print()).andExpect(jsonPath("$.id").value(1)).andExpect(jsonPath("$.roles").value(not(contains(RoleName.ROLE_HR.name()))));
+        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+                .content(userToCreate))
+                .andDo(print())
+                .andExpect(status().isCreated());
+        mockMvc.perform(delete("/users/1/roles/" + 2)).andDo(print())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.roles").value(not(contains(RoleName.ROLE_HR.name()))));
     }
 }

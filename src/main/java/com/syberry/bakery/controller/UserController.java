@@ -2,6 +2,7 @@ package com.syberry.bakery.controller;
 
 import com.syberry.bakery.dto.SignUpRequestDto;
 import com.syberry.bakery.dto.UserDto;
+import com.syberry.bakery.dto.UsersFilterDto;
 import com.syberry.bakery.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,39 +27,37 @@ import javax.validation.Valid;
 @Validated
 @Slf4j
 @RequiredArgsConstructor
+@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
-    @GetMapping("/users")
-    @ResponseStatus(HttpStatus.OK)
-    public Page<UserDto> getAllUsers(Pageable pageable, @RequestParam(defaultValue = "") String firstName, @RequestParam(defaultValue = "") String lastName, @RequestParam(defaultValue = "") String email, @RequestParam(defaultValue = "") String role) {
+    @GetMapping
+    public Page<UserDto> getAllUsers(Pageable pageable, UsersFilterDto usersFilterDto) {
         log.info("Retrieving all users");
-        return userService.getAllUsers(pageable, firstName, lastName, email, role);
+        return userService.getAllUsers(pageable, usersFilterDto);
     }
 
-    @GetMapping("/users/{id}")
-    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{id}")
     public UserDto getUserById(@PathVariable("id") Long id) {
         log.info("Retrieving user with id: {}", id);
         return userService.getUserById(id);
     }
 
-    @PostMapping("/users")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto createUser(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
         log.info("Creating new user");
         return userService.createUser(signUpRequestDto);
     }
 
-    @PutMapping("/users/{id}")
-    @ResponseStatus(HttpStatus.OK)
+    @PutMapping("/{id}")
     public UserDto updateUserById(@PathVariable("id") Long id, @RequestBody UserDto userDto) {
         log.info("Updating user with id: {}", id);
         userDto.setId(id);
         return userService.updateUser(userDto);
     }
 
-    @DeleteMapping("/users/{id}")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void disableUserById(@PathVariable("id") Long id) {
         log.info("Deleting user with id: {}", id);

@@ -17,13 +17,25 @@ public class UserConverter {
     public List<UserDto> convertToDtos(List<User> users) {
         List<UserDto> userDtos = new ArrayList<>();
         users.forEach(user -> {
-            userDtos.add(UserDto.builder().id(user.getId()).firstName(user.getFirstName()).lastName(user.getLastName()).email(user.getEmail()).roles(roleConverter.convertToStringRoles(user.getRoles())).build());
+            userDtos.add(UserDto.builder()
+                    .id(user.getId())
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
+                    .email(user.getEmail())
+                    .roles(roleConverter.convertToStringRoles(user.getRoles()))
+                    .build());
         });
         return userDtos;
     }
 
     public UserDto convertToDto(User user) {
-        return UserDto.builder().id(user.getId()).firstName(user.getFirstName()).lastName(user.getLastName()).email(user.getEmail()).roles(roleConverter.convertToStringRoles(user.getRoles())).build();
+        return UserDto.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .roles(roleConverter.convertToStringRoles(user.getRoles()))
+                .build();
     }
 
     public User convertToEntity(UserDto userDto) {
@@ -33,7 +45,10 @@ public class UserConverter {
     }
 
     public User convertToEntity(SignUpRequestDto signUpRequestDto) {
-        User user = new User(signUpRequestDto.getFirstName(), signUpRequestDto.getLastName(), signUpRequestDto.getEmail().toLowerCase(), signUpRequestDto.getPassword());
+        User user = new User(signUpRequestDto.getFirstName(),
+                signUpRequestDto.getLastName(),
+                signUpRequestDto.getEmail().toLowerCase(),
+                signUpRequestDto.getPassword());
         user.setRoles(roleConverter.convertToEntityRoles(signUpRequestDto.getRoles()));
         return user;
     }

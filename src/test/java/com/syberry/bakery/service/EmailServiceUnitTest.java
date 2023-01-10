@@ -1,7 +1,7 @@
 package com.syberry.bakery.service;
 
 import com.syberry.bakery.dto.EmailDetails;
-import com.syberry.bakery.service.impl.MailServiceImpl;
+import com.syberry.bakery.service.impl.EmailServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,14 +22,14 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class MailServiceUnitTest {
+public class EmailServiceUnitTest {
     @InjectMocks
-    private MailServiceImpl mailService;
+    private EmailServiceImpl mailService;
     @Mock
     private JavaMailSender mailSender;
 
     @Test
-    public void should_SuccessfullySendMail() {
+    void should_SuccessfullySendMail() {
         when(mailSender.createMimeMessage()).thenReturn(new MimeMessage(Session.getDefaultInstance(new Properties())));
         mailService.sendEmail(new EmailDetails("test@mail.com", "test", "test"));
         verify(mailSender, times(1)).send(any(MimeMessage.class));
