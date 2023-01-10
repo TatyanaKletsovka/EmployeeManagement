@@ -7,6 +7,7 @@ import com.syberry.bakery.entity.User;
 import com.syberry.bakery.exception.EntityNotFoundException;
 import com.syberry.bakery.repository.EmployeeRepository;
 import com.syberry.bakery.repository.UserRepository;
+import com.syberry.bakery.security.UserDetailsImpl;
 import com.syberry.bakery.service.impl.EmployeeServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,9 +18,13 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,6 +42,10 @@ public class EmployeeServiceTest {
     EmployeeRepository employeeRepository;
     @Mock
     UserRepository userRepository;
+    @Mock
+    private SecurityContext securityContext;
+    @Mock
+    private Authentication authentication;
 
     @Test
     public void should_SuccessfullyReturnAllEmployee() {
@@ -46,6 +55,7 @@ public class EmployeeServiceTest {
 
     @Test
     public void should_SuccessfullyReturnEmployeeById() {
+        setContext();
         when(employeeRepository.findByIdAndUserIsBlockedFalse(any())).thenReturn(Optional.of(new Employee()));
         EmployeeDto employeeDto = new EmployeeDto();
         employeeDto.setId(1L);
@@ -108,4 +118,10 @@ public class EmployeeServiceTest {
         }
     }
 
+    private void setContext() {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(authentication.getPrincipal())
+                .thenReturn(new UserDetailsImpl(1L, "test@mail.com", "test@mail.com", Set.of()));
+    }
 }

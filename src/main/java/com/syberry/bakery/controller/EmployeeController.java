@@ -35,28 +35,33 @@ public class EmployeeController {
     public Page<EmployeeShortViewDto> getAllEmployees (
             Pageable pageable,
             @RequestParam(defaultValue = "") String name) {
-        log.info("Retrieving all employees");
+        log.info("GET-request: getting all employees");
         return employeeService.getAllEmployees(pageable, name);
     }
 
     @GetMapping("/{id}")
     public EmployeeDto getEmployeeById(@PathVariable("id") Long id) {
-        log.info("Retrieving employee with id: {}", id);
+        log.info("GET-request: getting employee with id: {}", id);
         return employeeService.getEmployeeById(id);
+    }
+
+    @GetMapping("/authorised")
+    public EmployeeDto getEmployeeProfile() {
+        log.info("GET-request: getting current employee profile");
+        return employeeService.getEmployeeProfile();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EmployeeDto createEmployee(@Valid @RequestBody EmployeeDto employeeDto) {
-        log.info("Creating new employee");
+        log.info("POST-request: saving employee");
         return employeeService.createEmployee(employeeDto);
     }
 
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public EmployeeDto updateEmployee(@PathVariable("id") Long id,
                                       @Valid @RequestBody EmployeeDto employeeDto) {
-        log.info("Updating employee with id: {}", id);
+        log.info("PUT-request: updating employee with id: {}", id);
         employeeDto.setId(id);
         return employeeService.updateEmployeeById(employeeDto);
     }
@@ -64,7 +69,7 @@ public class EmployeeController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void disableEmployeeById(@PathVariable("id") Long id) {
-        log.info("Deleting employee with id: {}", id);
+        log.info("DELETE-request: deleting employee with id: {}", id);
         employeeService.disableEmployeeById(id);
     }
 

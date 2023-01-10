@@ -10,6 +10,7 @@ public interface EmployeeService {
     Page<EmployeeShortViewDto> getAllEmployees(Pageable pageable, String name);
 
     EmployeeDto getEmployeeById(Long id);
+    EmployeeDto getEmployeeProfile();
 
     EmployeeDto createEmployee(EmployeeDto employeeDto);
 

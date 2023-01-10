@@ -14,10 +14,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+
+import static com.syberry.bakery.util.SecurityContextUtil.getUserDetails;
 
 @Service
 @Slf4j
@@ -34,26 +37,40 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new EntityNotFoundException("User is not found"));
     }
 
-    private Employee getEmployeeByIdAndUserIsBlockedFalse(Long id) {
+    protected Employee getEmployeeByUserEmailAndBlockedFalse(String email) {
+        log.info("Getting employee by user email and blocked false");
+        return employeeRepository.findByUserEmailIgnoreCaseAndUserIsBlockedFalse(email)
+                .orElseThrow(() -> new EntityNotFoundException("User is not found"));
+    }
+
+    protected Employee getEmployeeByIdAndUserIsBlockedFalse(Long id) {
         log.info("Getting employee by id and user is blocked false");
         return employeeRepository.findByIdAndUserIsBlockedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException("Employee is not found"));
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR', 'ACCOUNTANT')")
     public Page<EmployeeShortViewDto> getAllEmployees(Pageable pageable, String name) {
-        System.out.println(pageable.toString());
-        System.out.println(name);
         return employeeRepository.findByUserIsBlockedFalseAndFilterIn(name, pageable)
                 .map(employeeConverter::convertToEmployeeShortViewDto);
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR', 'ACCOUNTANT')")
     public EmployeeDto getEmployeeById(Long id) {
         return employeeConverter.convertToEmployeeDto(getEmployeeByIdAndUserIsBlockedFalse(id));
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR', 'ACCOUNTANT', 'USER')")
+    public EmployeeDto getEmployeeProfile() {
+        String email = getUserDetails().getUsername();
+        return employeeConverter.convertToEmployeeDto(getEmployeeByUserEmailAndBlockedFalse(email));
+    }
+
+    @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public EmployeeDto createEmployee(EmployeeDto employeeDto) {
         if (employeeDto.getEmail() == null) {
             throw new CreateException("Email is required");
@@ -69,6 +86,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     @Transactional
     public EmployeeDto updateEmployeeById(EmployeeDto employeeDto) {
         Employee employeeDb = getEmployeeByIdAndUserIsBlockedFalse(employeeDto.getId());
@@ -77,6 +95,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     @Transactional
     public void disableEmployeeById(Long id) {
         Employee employee = getEmployeeByIdAndUserIsBlockedFalse(id);
