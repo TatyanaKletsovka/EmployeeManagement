@@ -16,6 +16,8 @@
 	<properties>
 		<java.version>17</java.version>
 		<junit.version>4.13.2</junit.version>
+		<quava.version>31.0.1-jre</quava.version>
+		<jjwt.version>0.9.1</jjwt.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -67,6 +69,27 @@
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<!--		<secutiry>-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
+			<version>${jjwt.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${quava.version}</version>
+		</dependency>
+		<!--		</security>-->
     </dependencies>
 
 	<build>

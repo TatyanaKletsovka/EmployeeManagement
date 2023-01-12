@@ -1,7 +1,9 @@
 package integrationtest;
 
 import com.syberry.bakery.BakeryApplication;
+import com.syberry.bakery.config.MailConfig;
 import com.syberry.bakery.repository.ContractRepository;
+import com.syberry.bakery.service.EmailService;
 import integrationtest.config.H2Config;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,8 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,14 +40,20 @@ public class ConverterIntegrationTest {
     MockMvc mockMvc;
     @Autowired
     ContractRepository contractRepository;
+    @MockBean
+    MailConfig mailConfig;
+    @MockBean
+    EmailService emailService;
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
     void getAllContractsWhenEverythingIsOk() throws Exception {
         mockMvc.perform(get("/contracts")).andDo(print())
                 .andExpect(jsonPath("$.content.size()").value(0));
     }
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
     void getContractByIdWhenEverythingIsOk() throws Exception {
         prepareData();
         mockMvc.perform(get("/contracts/1").contentType(MediaType.APPLICATION_JSON))
@@ -52,6 +62,7 @@ public class ConverterIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
     void getUserContractsWhenEverythingIsOk() throws Exception {
         prepareData();
         final File jsonFileContract1 = new ClassPathResource("json/create-contract2.json").getFile();
@@ -67,6 +78,7 @@ public class ConverterIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
     void addContractWhenEverythingIsOk() throws Exception {
         final File jsonFile = new ClassPathResource("json/create-user.json").getFile();
         final String userToCreate = Files.readString(jsonFile.toPath());
@@ -90,6 +102,7 @@ public class ConverterIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
     void updateContractWhenEverythingIsOk() throws Exception{
         prepareData();
         final File jsonFileUpdate = new ClassPathResource("json/update-contract.json").getFile();
@@ -104,6 +117,7 @@ public class ConverterIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
     void deleteContractWhenEverythingIsOk() throws Exception{
         prepareData();
         mockMvc.perform(delete("/contracts/1"))

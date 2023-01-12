@@ -9,4 +9,5 @@ public interface RoleService {
     UserDto addRole(Long userId, Long roleId);
     UserDto removeRole(Long userId, Long roleId);
     List<RoleDto> getRoles();
+    RoleDto getRoleById(Long id);
 }

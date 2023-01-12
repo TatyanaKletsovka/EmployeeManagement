@@ -4,13 +4,15 @@ import com.syberry.bakery.dto.RoleDto;
 import com.syberry.bakery.dto.RoleName;
 import com.syberry.bakery.entity.Role;
 import com.syberry.bakery.exception.EntityNotFoundException;
-import com.syberry.bakery.exception.InvalidRoleTypeException;
+import com.syberry.bakery.exception.InvalidArgumentTypeException;
 import com.syberry.bakery.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -19,13 +21,19 @@ public class RoleConverter {
     private final static String PREFIX = "ROLE_";
 
     public RoleDto convertToDto(Role role) {
-        return RoleDto.builder().id(role.getId()).name(role.getRoleName().name()).build();
+        return RoleDto.builder()
+                .id(role.getId())
+                .name(role.getRoleName().name())
+                .build();
     }
 
     public List<RoleDto> convertToDtos(List<Role> roles) {
         List<RoleDto> dtoRoles = new ArrayList<>();
         roles.forEach(role -> {
-            dtoRoles.add(RoleDto.builder().id(role.getId()).name(role.getRoleName().name()).build());
+            dtoRoles.add(RoleDto.builder()
+                    .id(role.getId())
+                    .name(role.getRoleName().name())
+                    .build());
         });
         return dtoRoles;
     }
@@ -50,11 +58,11 @@ public class RoleConverter {
             }
             return RoleName.valueOf(role);
         } catch (IllegalArgumentException ex) {
-            throw new InvalidRoleTypeException("Error while converting string role to enum role");
+            throw new InvalidArgumentTypeException("Error while converting string role to enum role");
         }
     }
 
-    public List<String> convertToStringRoles(List<Role> entRoles) {
+    public List<String> convertToStringRoles(Set<Role> entRoles) {
         List<String> roles = new ArrayList<>();
         entRoles.forEach(role -> {
             roles.add(role.getRoleName().name());
@@ -62,8 +70,8 @@ public class RoleConverter {
         return roles;
     }
 
-    public List<Role> convertToEntityRoles(List<String> strRoles) {
-        List<Role> roles = new ArrayList<>();
+    public Set<Role> convertToEntityRoles(List<String> strRoles) {
+        Set<Role> roles = new HashSet<>();
         if (strRoles == null) {
             Role userRole = roleRepository.findByRoleName(RoleName.ROLE_USER).get();
             roles.add(userRole);

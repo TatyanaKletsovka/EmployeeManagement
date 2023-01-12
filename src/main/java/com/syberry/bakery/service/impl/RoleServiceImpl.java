@@ -13,11 +13,14 @@ import com.syberry.bakery.repository.UserRepository;
 import com.syberry.bakery.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -29,10 +32,13 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDto addRole(Long userId, Long roleId) {
-        User user = userRepository.findByIdAndIsBlockedFalse(userId).orElseThrow(() -> new EntityNotFoundException("User is not found"));
-        Role role = roleRepository.findById(roleId).orElseThrow(() -> new EntityNotFoundException("Role is not found"));
-        List<Role> roles = user.getRoles();
+        User user = userRepository.findByIdAndIsBlockedFalse(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User is not found"));
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new EntityNotFoundException("Role is not found"));
+        Set<Role> roles = user.getRoles();
         roles.add(role);
         user.setRoles(roles);
         return userConverter.convertToDto(userRepository.findByIdAndIsBlockedFalse(userId).get());
@@ -40,16 +46,21 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDto removeRole(Long userId, Long roleId) {
-        User user = userRepository.findByIdAndIsBlockedFalse(userId).orElseThrow(() -> new EntityNotFoundException("User is not found"));
-        Role role = roleRepository.findById(roleId).orElseThrow(() -> new EntityNotFoundException("Role is not found"));
-        List<Role> roles = user.getRoles();
+        User user = userRepository.findByIdAndIsBlockedFalse(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User is not found"));
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new EntityNotFoundException("Role is not found"));
+        Set<Role> roles = user.getRoles();
 
-        if (role.getRoleName().equals(RoleName.ROLE_ADMIN) && userRepository.countAllByBlockedIsFalseAndRoleIn(List.of(RoleName.ROLE_ADMIN)) == 1) {
+        if (role.getRoleName().equals(RoleName.ROLE_ADMIN) &&
+                userRepository.countAllByBlockedIsFalseAndRoleIn(List.of(RoleName.ROLE_ADMIN)) == 1) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Last admin can't be deleted");
         } else if (roles.contains(role)) {
             if (roles.size() == 1) {
-                roles = List.of(roleRepository.findByRoleName(RoleName.ROLE_USER).orElseThrow(() -> new EntityNotFoundException("Role is not found")));
+                roles = new HashSet<>(List.of(roleRepository.findByRoleName(RoleName.ROLE_USER)
+                        .orElseThrow(() -> new EntityNotFoundException("Role is not found"))));
             } else {
                 roles.remove(role);
             }
@@ -59,7 +70,14 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public List<RoleDto> getRoles() {
         return roleConverter.convertToDtos(roleRepository.findAll());
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public RoleDto getRoleById(Long id) {
+        return roleConverter.convertToDto(roleRepository.findById(id).get());
     }
 }
