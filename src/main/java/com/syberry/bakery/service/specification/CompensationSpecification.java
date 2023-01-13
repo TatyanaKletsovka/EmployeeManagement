@@ -42,7 +42,8 @@ public class CompensationSpecification {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.like(
                     criteriaBuilder.concat(
-                            root.get(Compensation_.EMPLOYEE).get(Employee_.USER).get(User_.FIRST_NAME) + " ",
+                            criteriaBuilder.concat(
+                                    root.get(Compensation_.EMPLOYEE).get(Employee_.USER).get(User_.FIRST_NAME), " "),
                             root.get(Compensation_.EMPLOYEE).get(Employee_.USER).get(User_.LAST_NAME)),
                     "%" + name + "%");
     }

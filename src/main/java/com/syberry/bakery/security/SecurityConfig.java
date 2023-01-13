@@ -77,6 +77,7 @@ public class SecurityConfig {
                 .antMatchers("/auth/email-verification").permitAll()
                 .antMatchers("/auth/reset-password").permitAll()
                 .antMatchers("/auth/forgot-password").permitAll()
+                .antMatchers("/auth/refresh-token").permitAll()
                 .anyRequest().authenticated();
 
         http.headers().frameOptions().sameOrigin();

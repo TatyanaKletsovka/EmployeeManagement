@@ -3,8 +3,10 @@ package com.syberry.bakery.service;
 import com.syberry.bakery.converter.CompensationConverter;
 import com.syberry.bakery.dto.CompensationDto;
 import com.syberry.bakery.dto.CompensationFilterDto;
+import com.syberry.bakery.dto.RoleName;
 import com.syberry.bakery.entity.Compensation;
 import com.syberry.bakery.entity.Employee;
+import com.syberry.bakery.entity.User;
 import com.syberry.bakery.exception.CreateException;
 import com.syberry.bakery.exception.EntityNotFoundException;
 import com.syberry.bakery.repository.CompensationRepository;
@@ -13,6 +15,7 @@ import com.syberry.bakery.security.UserDetailsImpl;
 import com.syberry.bakery.service.impl.CompensationServiceImpl;
 import com.syberry.bakery.service.impl.EmployeeServiceImpl;
 import com.syberry.bakery.service.specification.CompensationSpecification;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -35,6 +39,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,6 +63,17 @@ public class CompensationServiceTest {
     private SecurityContext securityContext;
     @Mock
     private Authentication authentication;
+
+    @BeforeEach
+    public void auth() {
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(authentication.getPrincipal())
+                .thenReturn(new UserDetailsImpl(1L, null, "test@mail.com",
+                        List.of(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.name()))));
+    }
 
     @Test
     public void should_SuccessfullyReturnAllCompensations() {
@@ -105,9 +121,15 @@ public class CompensationServiceTest {
         dto.setEmployeeId(1L);
         dto.setEffectiveFrom(LocalDate.of(2000, 1, 1));
         dto.setValidUntil(LocalDate.of(2000, 1, 2));
-        when(employeeRepository.findByIdAndUserIsBlockedFalse(any())).thenReturn(Optional.of(new Employee()));
-        when(converter.convertToEntity(any(CompensationDto.class))).thenReturn(new Compensation());
-        when(repository.save(any())).thenReturn(new Compensation());
+        User user = new User();
+        user.setEmail("eee@gmail.com");
+        Employee employee = new Employee();
+        employee.setUser(user);
+        Compensation compensation = new Compensation();
+        compensation.setEmployee(employee);
+        when(employeeService.getEmployeeByIdAndUserIsBlockedFalse(any())).thenReturn(employee);
+        when(converter.convertToEntity(any())).thenReturn(compensation);
+        when(repository.save(any())).thenReturn(compensation);
         when(converter.convertToDto(any())).thenReturn(new CompensationDto());
         service.createCompensation(dto);
     }
@@ -130,10 +152,16 @@ public class CompensationServiceTest {
 
     @Test
     public void should_SuccessfullyUpdateCompensation() {
+        User user = new User();
+        user.setEmail("eee@gmail.com");
+        Employee employee = new Employee();
+        employee.setUser(user);
+        Compensation compensation = new Compensation();
+        compensation.setEmployee(employee);
         CompensationDto dto = new CompensationDto();
         dto.setEffectiveFrom(LocalDate.of(2000, 1, 1));
         dto.setValidUntil(LocalDate.of(2000, 1, 2));
-        when(repository.findByIdAndEmployeeUserIsBlockedFalse(any())).thenReturn(Optional.of(new Compensation()));
+        when(repository.findByIdAndEmployeeUserIsBlockedFalse(any())).thenReturn(Optional.of(compensation));
         when(converter.convertToEntity(any(), any())).thenReturn(new Compensation());
         when(converter.convertToDto(any())).thenReturn(new CompensationDto());
         service.updateCompensationById(dto);
@@ -153,7 +181,13 @@ public class CompensationServiceTest {
 
     @Test
     public void should_SuccessfullyDeleteCompensation() {
-        when(repository.findByIdAndEmployeeUserIsBlockedFalse(any())).thenReturn(Optional.of(new Compensation()));
+        User user = new User();
+        user.setEmail("eee@gmail.com");
+        Employee employee = new Employee();
+        employee.setUser(user);
+        Compensation compensation = new Compensation();
+        compensation.setEmployee(employee);
+        when(repository.findByIdAndEmployeeUserIsBlockedFalse(any())).thenReturn(Optional.of(compensation));
         service.deleteCompensationById(any());
     }
 

@@ -77,30 +77,33 @@ public class CompensationServiceImpl implements CompensationService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public CompensationDto createCompensation(CompensationDto dto) {
         Employee employee = employeeService.getEmployeeByIdAndUserIsBlockedFalse(dto.getEmployeeId());
         validateDates(dto);
         Compensation compensation = compensationConverter.convertToEntity(dto);
         compensation.setEmployee(employee);
+        throwErrorIfOwnedCompensation(compensation.getEmployee().getUser().getEmail());
         return compensationConverter.convertToDto(compensationRepository.save(compensation));
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Transactional
     public CompensationDto updateCompensationById(CompensationDto dto) {
         validateDates(dto);
         Compensation compensation = getCompensationByIdAndUserIsBlockedFalse(dto.getId());
+        throwErrorIfOwnedCompensation(compensation.getEmployee().getUser().getEmail());
         compensation = compensationConverter.convertToEntity(dto, compensation);
         return compensationConverter.convertToDto(compensation);
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Transactional
     public void deleteCompensationById(Long id) {
-        getCompensationByIdAndUserIsBlockedFalse(id);
+        Compensation compensation = getCompensationByIdAndUserIsBlockedFalse(id);
+        throwErrorIfOwnedCompensation(compensation.getEmployee().getUser().getEmail());
         compensationRepository.deleteById(id);
     }
 
@@ -118,6 +121,12 @@ public class CompensationServiceImpl implements CompensationService {
                 dto.getEffectiveFrom(), dto.getValidUntil());
         if (list.size() > 1 || (list.size() == 1 && !Objects.equals(list.get(0).getId(), dto.getId()))) {
             throw new CreateException("effectiveFrom and validUntil dates cannot overlap with other employee's compensations");
+        }
+    }
+
+    private void throwErrorIfOwnedCompensation(String email) {
+        if (Objects.equals(email, getUserDetails().getUsername())) {
+            throw new AccessException("The user can't interact with his own information");
         }
     }
 }

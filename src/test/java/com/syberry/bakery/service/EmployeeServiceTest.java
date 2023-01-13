@@ -2,6 +2,7 @@ package com.syberry.bakery.service;
 
 import com.syberry.bakery.converter.EmployeeConverter;
 import com.syberry.bakery.dto.EmployeeDto;
+import com.syberry.bakery.dto.RoleName;
 import com.syberry.bakery.entity.Employee;
 import com.syberry.bakery.entity.User;
 import com.syberry.bakery.exception.EntityNotFoundException;
@@ -9,6 +10,7 @@ import com.syberry.bakery.repository.EmployeeRepository;
 import com.syberry.bakery.repository.UserRepository;
 import com.syberry.bakery.security.UserDetailsImpl;
 import com.syberry.bakery.service.impl.EmployeeServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,6 +21,7 @@ import org.mockito.quality.Strictness;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -28,6 +31,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,6 +50,17 @@ public class EmployeeServiceTest {
     private SecurityContext securityContext;
     @Mock
     private Authentication authentication;
+
+    @BeforeEach
+    public void auth() {
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(authentication.getPrincipal())
+                .thenReturn(new UserDetailsImpl(1L, null, "test@mail.com",
+                        List.of(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.name()))));
+    }
 
     @Test
     public void should_SuccessfullyReturnAllEmployee() {
@@ -86,7 +101,11 @@ public class EmployeeServiceTest {
 
     @Test
     public void should_SuccessfullyUpdateEmployee() {
-        when(employeeRepository.findByIdAndUserIsBlockedFalse(any())).thenReturn(Optional.of(new Employee()));
+        User user = new User();
+        user.setEmail("eee@gmail.com");
+        Employee employee = new Employee();
+        employee.setUser(user);
+        when(employeeRepository.findByIdAndUserIsBlockedFalse(any())).thenReturn(Optional.of(employee));
         when(employeeConverter.convertToEntity(any(), any())).thenReturn(new Employee());
         when(employeeConverter.convertToEmployeeDto(any())).thenReturn(new EmployeeDto());
         employeeService.updateEmployeeById(new EmployeeDto());
@@ -104,7 +123,9 @@ public class EmployeeServiceTest {
     @Test
     public void should_SuccessfullyDisableEmployee() {
         Employee employee = new Employee();
-        employee.setUser(new User());
+        User user = new User();
+        user.setEmail("eee@gmail.com");
+        employee.setUser(user);
         when(employeeRepository.findByIdAndUserIsBlockedFalse(any())).thenReturn(Optional.of(employee));
         employeeService.disableEmployeeById(any());
     }
