@@ -5,6 +5,7 @@ import com.syberry.bakery.dto.EmployeeDto;
 import com.syberry.bakery.dto.EmployeeShortViewDto;
 import com.syberry.bakery.entity.Employee;
 import com.syberry.bakery.entity.User;
+import com.syberry.bakery.exception.AccessException;
 import com.syberry.bakery.exception.CreateException;
 import com.syberry.bakery.exception.EntityNotFoundException;
 import com.syberry.bakery.repository.EmployeeRepository;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import static com.syberry.bakery.util.SecurityContextUtil.getUserDetails;
 
@@ -43,7 +45,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new EntityNotFoundException("User is not found"));
     }
 
-    protected Employee getEmployeeByIdAndUserIsBlockedFalse(Long id) {
+    public Employee getEmployeeByIdAndUserIsBlockedFalse(Long id) {
         log.info("Getting employee by id and user is blocked false");
         return employeeRepository.findByIdAndUserIsBlockedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException("Employee is not found"));
@@ -75,6 +77,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (employeeDto.getEmail() == null) {
             throw new CreateException("Email is required");
         }
+        throwErrorIfOwnedEmployee(employeeDto.getEmail());
         String email = employeeDto.getEmail();
         User user = getUserByEmailAndBlockedFalse(email);
         if (employeeRepository.findByUserEmailIgnoreCaseAndUserIsBlockedFalse(email).isPresent()) {
@@ -90,6 +93,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public EmployeeDto updateEmployeeById(EmployeeDto employeeDto) {
         Employee employeeDb = getEmployeeByIdAndUserIsBlockedFalse(employeeDto.getId());
+        throwErrorIfOwnedEmployee(employeeDb.getUser().getEmail());
         Employee employee = employeeConverter.convertToEntity(employeeDto, employeeDb);
         return employeeConverter.convertToEmployeeDto(employee);
     }
@@ -99,9 +103,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public void disableEmployeeById(Long id) {
         Employee employee = getEmployeeByIdAndUserIsBlockedFalse(id);
+        throwErrorIfOwnedEmployee(employee.getUser().getEmail());
         employee.setDeletedAt(LocalDateTime.now());
         employee.getUser().setDisabledAt(LocalDateTime.now());
         employee.getUser().setIsBlocked(true);
+    }
+
+    private void throwErrorIfOwnedEmployee(String email) {
+        if (Objects.equals(email, getUserDetails().getUsername())) {
+            throw new AccessException("The user can't interact with his own information");
+        }
     }
 
 }
