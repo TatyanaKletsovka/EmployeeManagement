@@ -16,6 +16,8 @@ public interface ContractService {
 
     List<ContractShortDto> getByEmployeeId(Long id);
 
+    List<ContractShortDto> getAllOwnedContracts();
+
     ContractFullDto saveContract(ContractSaveDto dto);
 
     ContractFullDto updateContract(ContractSaveDto dto);

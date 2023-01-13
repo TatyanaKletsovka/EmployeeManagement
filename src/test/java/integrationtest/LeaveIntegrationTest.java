@@ -14,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,51 +35,61 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-public class ConverterIntegrationTest {
+public class LeaveIntegrationTest {
+
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
     @Autowired
-    ContractRepository contractRepository;
+    private ContractRepository contractRepository;
     @MockBean
-    MailConfig mailConfig;
+    private MailConfig mailConfig;
     @MockBean
-    EmailService emailService;
+    private EmailService emailService;
 
     @Test
-    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
-    void getAllContractsWhenEverythingIsOk() throws Exception {
-        mockMvc.perform(get("/contracts")).andDo(print())
+    @WithUserDetails("admin@mail.com")
+    void getAllLeavesWhenEverythingIsOk() throws Exception {
+        mockMvc.perform(get("/leaves")).andDo(print())
                 .andExpect(jsonPath("$.content.size()").value(0));
     }
 
     @Test
-    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
-    void getContractByIdWhenEverythingIsOk() throws Exception {
+    @WithUserDetails("admin@mail.com")
+    void getLeaveByIdWhenEverythingIsOk() throws Exception {
         prepareData();
-        mockMvc.perform(get("/contracts/1").contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/leaves/1").contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(jsonPath("$.contractId").value(1));
+                .andExpect(jsonPath("$.id").value(1));
     }
 
     @Test
-    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
-    void getUserContractsWhenEverythingIsOk() throws Exception {
+    @WithUserDetails("admin@mail.com")
+    void  getOwnedContractsWhenEverythingIsOk() throws Exception{
         prepareData();
-        final File jsonFileContract1 = new ClassPathResource("json/create-contract2.json").getFile();
-        final String contractToCreate1 = Files.readString(jsonFileContract1.toPath());
-        mockMvc.perform(post("/contracts")
+        mockMvc.perform(get("/leaves/employees").contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(jsonPath("$.size()").value(0));
+    }
+
+    @Test
+    @WithUserDetails("admin@mail.com")
+    void getEmployeeLeavesWhenEverythingIsOk() throws Exception {
+        prepareData();
+        final File jsonFileLeave = new ClassPathResource("json/create-leave2.json").getFile();
+        final String leaveToCreate = Files.readString(jsonFileLeave.toPath());
+        mockMvc.perform(post("/leaves")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(contractToCreate1))
+                        .content(leaveToCreate))
                 .andDo(print());
-        mockMvc.perform(get("/contracts/employees/1")
+        mockMvc.perform(get("/leaves/employees/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(jsonPath("$.size()").value(2));
     }
 
     @Test
-    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
-    void addContractWhenEverythingIsOk() throws Exception {
+    @WithUserDetails("admin@mail.com")
+    void addLeaveWhenEverythingIsOk() throws Exception {
         final File jsonFile = new ClassPathResource("json/create-user.json").getFile();
         final String userToCreate = Files.readString(jsonFile.toPath());
         mockMvc.perform(post("/users")
@@ -96,34 +106,40 @@ public class ConverterIntegrationTest {
         mockMvc.perform(post("/contracts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(contractToCreate))
+                .andDo(print());
+        final File jsonFileLeave = new ClassPathResource("json/create-leave.json").getFile();
+        final String leaveToCreate = Files.readString(jsonFileLeave.toPath());
+        mockMvc.perform(post("/leaves")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(leaveToCreate))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.contractId").exists());
+                .andExpect(jsonPath("$.id").exists());
     }
 
     @Test
-    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
-    void updateContractWhenEverythingIsOk() throws Exception{
+    @WithUserDetails("admin@mail.com")
+    void updateLeaveWhenEverythingIsOk() throws Exception {
         prepareData();
-        final File jsonFileUpdate = new ClassPathResource("json/update-contract.json").getFile();
-        final String contractToUpdate = Files.readString(jsonFileUpdate.toPath());
-        mockMvc.perform(put("/contracts/1")
+        final File jsonFileUpdate = new ClassPathResource("json/update-leave.json").getFile();
+        final String leaveToUpdate = Files.readString(jsonFileUpdate.toPath());
+        mockMvc.perform(put("/leaves/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(contractToUpdate))
+                        .content(leaveToUpdate))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.dateOfSignature").value("2000-01-04"))
-                .andExpect(jsonPath("$.type").value("PART_TIME"));
+                .andExpect(jsonPath("$.leaveEndDate").value("2023-02-28"))
+                .andExpect(jsonPath("$.leaveReason").value("rest"));
     }
 
     @Test
-    @WithMockUser(username = "admin@mail.com", roles = {"ADMIN"})
-    void deleteContractWhenEverythingIsOk() throws Exception{
+    @WithUserDetails("admin@mail.com")
+    void deleteLeaveWhenEverythingIsOk() throws Exception {
         prepareData();
-        mockMvc.perform(delete("/contracts/1"))
+        mockMvc.perform(delete("/leaves/1"))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        mockMvc.perform(get("/contracts/1"))
+        mockMvc.perform(get("/leaves/1"))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -145,6 +161,12 @@ public class ConverterIntegrationTest {
         mockMvc.perform(post("/contracts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(contractToCreate))
+                .andDo(print());
+        final File jsonFileLeave = new ClassPathResource("json/create-leave.json").getFile();
+        final String leaveToCreate = Files.readString(jsonFileLeave.toPath());
+        mockMvc.perform(post("/leaves")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(leaveToCreate))
                 .andDo(print());
     }
 }
