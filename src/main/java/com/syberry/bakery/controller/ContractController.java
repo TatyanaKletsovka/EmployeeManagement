@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.util.List;
 
+import static com.syberry.bakery.util.SecurityContextUtil.getUserDetails;
+
 @RestController
 @RequestMapping("/contracts")
 @Slf4j
@@ -45,8 +47,14 @@ public class ContractController {
 
     @GetMapping("/employees/{id}")
     public List<ContractShortDto> getUserContracts(@PathVariable("id") Long id) {
-        log.info("GET-request: getting contract with for user id: {}", id);
+        log.info("GET-request: getting contracts for user with id: {}", id);
         return contractService.getByEmployeeId(id);
+    }
+
+    @GetMapping("/employees")
+    public List<ContractShortDto> getOwnedContracts() {
+        log.info("GET-request: getting contracts for user(themself) with username: {}", getUserDetails().getUsername());
+        return contractService.getAllOwnedContracts();
     }
 
     @PostMapping

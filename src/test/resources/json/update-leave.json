@@ -1,0 +1,8 @@
+{
+  "employeeId": 1,
+  "leaveType": "PAID_LEAVE",
+  "leaveStartDate": "2023-02-20",
+  "leaveEndDate": "2023-02-28",
+  "leaveStatus": "APPROVED",
+  "leaveReason": "rest"
+}

@@ -1,18 +1,21 @@
 package com.syberry.bakery.service;
 
+import com.syberry.bakery.dto.AssignmentType;
 import com.syberry.bakery.dto.ContractFullDto;
 import com.syberry.bakery.dto.ContractSaveDto;
 import com.syberry.bakery.dto.ContractShortDto;
+import com.syberry.bakery.dto.Position;
+import com.syberry.bakery.dto.RoleName;
 import com.syberry.bakery.entity.Contract;
 import com.syberry.bakery.entity.Employee;
+import com.syberry.bakery.entity.Role;
 import com.syberry.bakery.entity.User;
-import com.syberry.bakery.dto.AssignmentType;
-import com.syberry.bakery.dto.Position;
 import com.syberry.bakery.exception.DeleteException;
 import com.syberry.bakery.exception.EntityNotFoundException;
 import com.syberry.bakery.exception.UpdateException;
 import com.syberry.bakery.repository.ContractRepository;
 import com.syberry.bakery.repository.EmployeeRepository;
+import com.syberry.bakery.security.UserDetailsImpl;
 import com.syberry.bakery.service.impl.ContractServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,15 +26,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,7 +51,10 @@ class ContractServiceUnitTest {
     private ContractRepository contractRepository;
     @Mock
     private EmployeeRepository employeeRepository;
-
+    @Mock
+    private Authentication authentication;
+    @Mock
+    private SecurityContext securityContext;
     @InjectMocks
     private ContractServiceImpl contractService;
     private Contract contract;
@@ -107,6 +119,7 @@ class ContractServiceUnitTest {
     void getByContractIdWhenContractExistsThenReturnContract() {
         when(contractRepository.findByIdAndEmployeeUserIsBlockedFalse(1L))
                 .thenReturn(Optional.of(contract));
+        setContext();
         ContractFullDto contractFullDto = contractService.getByContractId(1L);
         assertEquals(contractFullDto.getContractId(), contract.getId());
         assertEquals(contractFullDto.getPosition(), contract.getPosition());
@@ -115,6 +128,16 @@ class ContractServiceUnitTest {
         assertEquals(contractFullDto.getContractEndDate(), contract.getContractEndDate());
         assertEquals(contractFullDto.getType(), contract.getType());
         assertEquals(contractFullDto.getProbationPeriod(), contract.getProbationPeriod());
+    }
+
+    @Test
+    @DisplayName("Should return all owned leaves")
+    void getAllOwnedContractsShouldReturnAllOwnedContracts() {
+        employee.setUser(user);
+        setContext();
+        when(contractRepository.findByEmployeeUserEmailAndEmployeeUserIsBlockedFalse(anyString()))
+                .thenReturn(List.of(contract));
+        assertEquals(1, contractService.getAllOwnedContracts().size());
     }
 
     @Test
@@ -132,7 +155,6 @@ class ContractServiceUnitTest {
         employee.setUser(user);
         when(contractRepository.findByEmployeeIdAndEmployeeUserIsBlockedFalse(anyLong()))
                 .thenReturn(List.of(contract));
-
         List<ContractShortDto> result = contractService.getByEmployeeId(1L);
 
         assertEquals(1, result.size());
@@ -150,12 +172,13 @@ class ContractServiceUnitTest {
     @Test
     @DisplayName("Should save the contract when the employee is not blocked")
     void saveContractWhenEmployeeIsNotBlocked() {
+        employee.setUser(user);
         when(employeeRepository.findByIdAndUserIsBlockedFalse(anyLong()))
                 .thenReturn(Optional.of(employee));
         when(contractRepository.findByEmployeeIdAndEmployeeUserIsBlockedFalse(anyLong()))
                 .thenReturn(List.of());
         when(contractRepository.save(any())).thenReturn(contract);
-
+        setContext();
         ContractFullDto contractFullDto = contractService.saveContract(saveDto);
 
         assertEquals(contractFullDto.getContractId(), contract.getId());
@@ -198,9 +221,22 @@ class ContractServiceUnitTest {
     @Test
     @DisplayName("Should delete the contract when the contract exists")
     void deleteContractWhenContractExists() {
+        employee.setUser(user);
         when(contractRepository.findByIdAndEmployeeUserIsBlockedFalse(1L)).thenReturn(Optional.of(contract));
+        setContext();
         contractService.deleteContract(1L);
-
         verify(contractRepository, times(1)).deleteById(1L);
+    }
+
+    private void setContext() {
+        Set<Role> roles = Set.of(new Role(1L, RoleName.ROLE_ADMIN));
+        List<SimpleGrantedAuthority> list = roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getRoleName().name()))
+                .toList();
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(authentication.getPrincipal())
+                .thenReturn(new UserDetailsImpl(1L, "test@mail.com",
+                        "test@mail.com", list));
     }
 }

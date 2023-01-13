@@ -29,7 +29,7 @@ public class ContractConverter {
     }
 
     public ContractShortDto toShortInfoDto(Contract entity) {
-        return new ContractShortDto(entity.getId(),
+        return new ContractShortDto(entity.getEmployee().getId(),
                 entity.getEmployee().getUser().getFirstName(),
                 entity.getEmployee().getUser().getLastName(),
                 entity.getContractStartDate(),

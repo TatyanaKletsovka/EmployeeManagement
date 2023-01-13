@@ -58,8 +58,6 @@ public class Contract {
     private LocalDateTime createdAt;
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
 
     public Contract(Long id, Employee employee, Position position, LocalDate dateOfSignature,
                     LocalDate contractStartDate, LocalDate contractEndDate, AssignmentType type,

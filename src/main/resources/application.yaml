@@ -45,3 +45,8 @@ bakery:
     jwtExpirationMs: 900000
     jwtRefreshExpirationHr: 24
     2faDurationMn: 5
+# variables for leaves
+  leave:
+    sickDays: 3
+    paidDays: 25
+

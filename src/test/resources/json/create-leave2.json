@@ -1,0 +1,8 @@
+{
+  "employeeId": 1,
+  "leaveType": "SICK_DAY",
+  "leaveStartDate": "2023-02-15",
+  "leaveEndDate": "2023-02-16",
+  "leaveStatus": "APPROVED",
+  "leaveReason": "vocation"
+}
