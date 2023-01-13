@@ -83,7 +83,7 @@ public class ContractIntegrationTest {
         mockMvc.perform(get("/contracts/employees/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(jsonPath("$.size()").value(2));
+                .andExpect(jsonPath("$.size()").value(1));
     }
 
     @Test
@@ -121,7 +121,7 @@ public class ContractIntegrationTest {
                         .content(contractToUpdate))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.dateOfSignature").value("2000-01-04"))
+                .andExpect(jsonPath("$.dateOfSignature").value("2024-01-01"))
                 .andExpect(jsonPath("$.type").value("PART_TIME"));
     }
 

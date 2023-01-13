@@ -1,11 +1,11 @@
 {
   "employeeId": 1,
   "position": "BAKER",
-  "dateOfSignature": "2020-01-04",
-  "contractStartDate":"2020-01-04",
+  "dateOfSignature": "2024-01-04",
+  "contractStartDate":"2024-01-04",
   "contractEndDate":"2025-01-03",
-  "type": "FULL_TIME",
+  "type": "PART_TIME",
   "probationPeriod": true,
-  "probationStartDate": "2023-01-03",
-  "probationEndDate": "2023-04-03"
+  "probationStartDate": "2024-01-04",
+  "probationEndDate": "2024-04-04"
 }

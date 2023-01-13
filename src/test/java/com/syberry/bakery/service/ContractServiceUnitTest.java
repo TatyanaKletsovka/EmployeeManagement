@@ -202,12 +202,9 @@ class ContractServiceUnitTest {
     @DisplayName("Should throw an exception when the employee is not found")
     void updateContractWhenEmployeeIsNotFoundThenThrowException() {
         when(contractRepository.findByIdAndEmployeeUserIsBlockedFalse(1L)).thenReturn(Optional.of(contract));
-        when(employeeRepository.findByIdAndUserIsBlockedFalse(1L)).thenReturn(Optional.empty());
-
         assertThrows(UpdateException.class, () -> contractService.updateContract(saveDto));
 
         verify(contractRepository, times(1)).findByIdAndEmployeeUserIsBlockedFalse(1L);
-        verify(employeeRepository, times(1)).findByIdAndUserIsBlockedFalse(1L);
     }
 
     @Test

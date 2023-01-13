@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Future;
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PastOrPresent;
 import java.time.LocalDate;
 
 @Data
@@ -21,9 +21,8 @@ public class ContractSaveDto {
     private Long employeeId;
     @NotNull(message = "Position is required")
     private Position position;
-    @PastOrPresent(message = "Date can't be in feature")
     private LocalDate dateOfSignature = LocalDate.now();
-    @PastOrPresent(message = "Date can't be in feature")
+    @FutureOrPresent(message = "Date can't be in past")
     private LocalDate contractStartDate = LocalDate.now();
     @NotNull(message = "Contract end date is required")
     @Future(message = "Data should be in feature")

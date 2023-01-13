@@ -89,6 +89,7 @@ public class ContractServiceImpl implements ContractService {
             if (Objects.equals(getUserDetails().getUsername(), getEmailByContract(contract))) {
                 throw new CreateException("You can't create a contract for yourself");
             }
+            checkContractDates(contract);
             contract.setCreatedAt(LocalDateTime.now());
             return ContractConverter.toFullInfoDto(contractRepository.save(contract));
         } catch (IllegalArgumentException e) {
@@ -105,6 +106,7 @@ public class ContractServiceImpl implements ContractService {
         if (Objects.equals(getUserDetails().getUsername(), getEmailByContract(contract))) {
             throw new UpdateException("You can't update a contract for yourself");
         }
+        checkContractDates(contract);
         contract.setUpdatedAt(LocalDateTime.now());
         return ContractConverter.toFullInfoDto(contractRepository.save(contract));
     }
@@ -123,11 +125,27 @@ public class ContractServiceImpl implements ContractService {
         }
     }
 
+    private void checkContractDates(Contract contract) {
+        List<Contract> forCheckData = contractRepository
+                .findByEmployeeIdAndContractStartDateOrContractEndDateBetween(contract.getEmployee().getId(),
+                contract.getContractStartDate(), contract.getContractEndDate());
+        if (forCheckData.size() != 0 && forCheckData.stream().noneMatch((l) -> l.getId().equals(contract.getId()))) {
+            throw new CreateException("You already have contract on this period");
+        }
+        if (contract.getContractStartDate().isAfter(contract.getContractEndDate())){
+            throw new CreateException("End data can't be earlier then start data");
+        }
+        if (contract.getDateOfSignature().isAfter(contract.getContractStartDate())){
+            throw new CreateException("Contract start data can't be earlier then date of signature");
+        }
+    }
+
     private Contract checkFieldsForUpdate(ContractSaveDto dto) {
         Contract contract = contractRepository.findByIdAndEmployeeUserIsBlockedFalse(dto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("There is no such contract"));
-        contract.setEmployee(employeeRepository.findByIdAndUserIsBlockedFalse(dto.getEmployeeId())
-                .orElseThrow(() -> new UpdateException("There is no such employee")));
+        if (!Objects.equals(dto.getEmployeeId(), contract.getEmployee().getId())){
+            throw new UpdateException("You can't change employee");
+        }
         contract.setPosition(dto.getPosition());
         contract.setDateOfSignature(dto.getDateOfSignature());
         contract.setContractStartDate(dto.getContractStartDate());
@@ -144,6 +162,9 @@ public class ContractServiceImpl implements ContractService {
             throw new CreateException("If the employee has a probation period, then the dates must be filled in");
         } else if (!dto.getProbationPeriod() && (dto.getProbationStartDate() != null || dto.getProbationEndDate() != null)) {
             throw new CreateException("If the employee doesn't have a probation period, the dates must be empty");
+        }
+        if (dto.getProbationPeriod() && dto.getProbationStartDate().isAfter(dto.getProbationEndDate())){
+            throw new CreateException("End data can't be earlier then start data");
         }
     }
 
