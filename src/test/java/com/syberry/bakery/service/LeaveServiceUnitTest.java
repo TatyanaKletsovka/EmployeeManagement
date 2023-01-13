@@ -265,11 +265,11 @@ class LeaveServiceUnitTest {
     @DisplayName("Should throw an exception when the leave type is paid leave and there are not enough paid leave days")
     void updateWhenLeaveTypeIsPaidLeaveAndThereAreNotEnoughPaidLeaveDaysThenThrowException() {
         employee.setUser(user);
+        employee.setId(1L);
         dto.setLeaveType(LeaveType.PAID_LEAVE);
         when(leaveRepository.findByIdAndEmployeeUserIsBlockedFalse(1L))
                 .thenReturn(Optional.of(leave));
         when(leaveUtil.checkRemainingDays(leave, LeaveType.PAID_LEAVE)).thenReturn(false);
-        when(employeeRepository.findByIdAndUserIsBlockedFalse(any())).thenReturn(Optional.of(employee));
         setContext();
         assertThrows(CreateException.class, () -> leaveService.update(dto));
     }
@@ -278,8 +278,8 @@ class LeaveServiceUnitTest {
     @DisplayName("Should return a full dto of updated leave when everything is ok")
     void updateWhenEverythingIsOkThenReturnFullDtoOfUpdatedLeave() {
         employee.setUser(user);
+        employee.setId(1L);
         when(leaveRepository.findByIdAndEmployeeUserIsBlockedFalse(1L)).thenReturn(Optional.of(leave));
-        when(employeeRepository.findByIdAndUserIsBlockedFalse(1L)).thenReturn(Optional.of(employee));
         when(leaveUtil.checkRemainingDays(leave, LeaveType.SICK_DAY)).thenReturn(true);
         setContext();
         LeaveFullDto fullDto = leaveService.update(dto);

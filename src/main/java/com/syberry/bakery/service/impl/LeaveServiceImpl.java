@@ -98,10 +98,11 @@ public class LeaveServiceImpl implements LeaveService {
     public LeaveFullDto update(LeaveSaveDto dto) {
         Leave leave = leaveRepository.findByIdAndEmployeeUserIsBlockedFalse(dto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("There is no such leave"));
-        leave.setEmployee(employeeRepository.findByIdAndUserIsBlockedFalse(dto.getEmployeeId())
-                .orElseThrow(() -> new EntityNotFoundException("There is no such employee")));
         if (Objects.equals(getUserDetails().getUsername(), getEmailByLeave(leave))) {
             throw new UpdateException("You can't update leave for yourself");
+        }
+        if (!Objects.equals(dto.getEmployeeId(), leave.getEmployee().getId())){
+            throw new UpdateException("You can't change employee");
         }
         leave.setLeaveType(dto.getLeaveType());
         leave.setLeaveStartDate(dto.getLeaveStartDate());
@@ -128,10 +129,13 @@ public class LeaveServiceImpl implements LeaveService {
     }
 
     private void validateLeave(Leave leave) {
-        Optional<Leave> forCheckData = leaveRepository.findByEmployeeIdAndLeaveStartDateOrLeaveEndDateBetween(leave.getEmployee().getId(),
+        List<Leave> forCheckData = leaveRepository.findByEmployeeIdAndLeaveStartDateOrLeaveEndDateBetween(leave.getEmployee().getId(),
                 leave.getLeaveStartDate(), leave.getLeaveEndDate());
-        if (forCheckData.isPresent() && !Objects.equals(forCheckData.get().getId(), leave.getId())) {
+        if (forCheckData.size() != 0 && forCheckData.stream().noneMatch((l) -> l.getId().equals(leave.getId()))) {
             throw new CreateException("You already have planned leave on this days");
+        }
+        if (leave.getLeaveStartDate().isAfter(leave.getLeaveEndDate())){
+            throw new CreateException("End data can't be earlier then start data");
         }
         if (leave.getLeaveType() == LeaveType.SICK_DAY) {
             if (!leaveUtil.checkRemainingDays(leave, LeaveType.SICK_DAY)) {
