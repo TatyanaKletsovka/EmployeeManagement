@@ -24,8 +24,8 @@ public interface LeaveRepository extends JpaRepository<Leave, Long>, JpaSpecific
             select l from Leave l
             where l.employee.id = ?1
             and l.employee.user.isBlocked = false
-            and (l.leaveStartDate between ?2 and ?3 or l.leaveEndDate between ?2 and ?3)
-            or (l.leaveStartDate <= ?2 and l.leaveEndDate >= ?3)""")
+            and ((l.leaveStartDate between ?2 and ?3 or l.leaveEndDate between ?2 and ?3)
+            or (l.leaveStartDate <= ?2 and l.leaveEndDate >= ?3))""")
     List<Leave> findByEmployeeIdAndLeaveStartDateOrLeaveEndDateBetween(Long id, LocalDate leaveStartDate, LocalDate leaveEndDate);
 
 }

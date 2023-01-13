@@ -30,7 +30,7 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
             select c from Contract c
             where c.employee.id = ?1
             and c.employee.user.isBlocked = false
-            and (c.contractStartDate between ?2 and ?3 or c.contractEndDate between ?2 and ?3)
-            or (c.contractStartDate <= ?2 and c.contractEndDate >= ?3)""")
+            and ((c.contractStartDate between ?2 and ?3 or c.contractEndDate between ?2 and ?3)
+            or (c.contractStartDate <= ?2 and c.contractEndDate >= ?3))""")
     List<Contract> findByEmployeeIdAndContractStartDateOrContractEndDateBetween(Long id, LocalDate contractStartDate, LocalDate contractEndDate);
 }
