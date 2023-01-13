@@ -1,0 +1,7 @@
+{
+  "amount": 300.0,
+  "effectiveFrom": "2023-01-01",
+  "validUntil": "2024-01-01",
+  "specialConditions": "specialConditions",
+  "employeeId": 2
+}

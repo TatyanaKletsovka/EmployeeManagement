@@ -69,7 +69,7 @@
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<!--		<secutiry>-->
+		<!--		<security>-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
@@ -90,6 +90,10 @@
 			<version>${quava.version}</version>
 		</dependency>
 		<!--		</security>-->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-jpamodelgen</artifactId>
+		</dependency>
     </dependencies>
 
 	<build>
