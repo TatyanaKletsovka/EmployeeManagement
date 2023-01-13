@@ -90,7 +90,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'HR', 'ACCOUNTANT', 'USER')")
     public LoginDto refreshToken(HttpServletRequest request) {
         String refreshToken = jwtUtils.getJwtRefreshFromCookies(request);
         if ((refreshToken != null) && (refreshToken.length() > 0)) {
