@@ -33,22 +33,20 @@ public class JwtUtils {
 
     @Value("${bakery.security.jwtRefreshCookieName}")
     private String jwtRefreshCookie;
-    @Value("${server.servlet.context-path}")
-    private String path;
-    private final static String REFRESH_TOKEN_PATH = "/auth/refresh-token";
+    private static final String PATH = "/";
 
     public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal) {
         String jwt = generateTokenFromUsername(userPrincipal.getUsername());
-        return generateCookie(jwtCookie, jwt, path);
+        return generateCookie(jwtCookie, jwt, PATH);
     }
 
     public ResponseCookie generateJwtCookie(User user) {
         String jwt = generateTokenFromUsername(user.getEmail());
-        return generateCookie(jwtCookie, jwt, path);
+        return generateCookie(jwtCookie, jwt, PATH);
     }
 
     public ResponseCookie generateRefreshJwtCookie(String refreshToken) {
-        return generateCookie(jwtRefreshCookie, refreshToken, path + REFRESH_TOKEN_PATH);
+        return generateCookie(jwtRefreshCookie, refreshToken, PATH);
     }
 
     public String getJwtFromCookies(HttpServletRequest request) {
@@ -61,11 +59,11 @@ public class JwtUtils {
 
 
     public ResponseCookie getCleanJwtCookie() {
-        return ResponseCookie.from(jwtCookie, null).path(path).build();
+        return ResponseCookie.from(jwtCookie, null).path(PATH).build();
     }
 
     public ResponseCookie getCleanJwtRefreshCookie() {
-        return ResponseCookie.from(jwtRefreshCookie, null).path(path + REFRESH_TOKEN_PATH).build();
+        return ResponseCookie.from(jwtRefreshCookie, null).path(PATH).build();
     }
 
     public String getUserNameFromJwtToken(String token) {
@@ -93,7 +91,8 @@ public class JwtUtils {
     }
 
     private ResponseCookie generateCookie(String name, String value, String path) {
-        return ResponseCookie.from(name, value).path(path).maxAge(24 * 60 * 60).httpOnly(true).build();
+        return ResponseCookie.from(name, value).path(path)
+                .maxAge(24 * 60 * 60).httpOnly(true).secure(false).sameSite("strict").build();
     }
 
     private String getCookieValueByName(HttpServletRequest request, String name) {

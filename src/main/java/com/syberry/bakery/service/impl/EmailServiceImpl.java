@@ -1,10 +1,12 @@
 package com.syberry.bakery.service.impl;
 
+import com.google.common.io.CharStreams;
 import com.syberry.bakery.dto.EmailDetails;
 import com.syberry.bakery.exception.EmailException;
 import com.syberry.bakery.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,8 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,8 +52,8 @@ public class EmailServiceImpl implements EmailService {
     public void sendEmailVerificationCode(String code, String userEmail) {
         String emailTemplate;
         try {
-            final File jsonFile = new ClassPathResource("html/email-verification.html").getFile();
-            emailTemplate = Files.readString(jsonFile.toPath());
+            Resource resource = new ClassPathResource("html" + File.separator + "email-verification.html");
+            emailTemplate = CharStreams.toString(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new EmailException("Failed to send verification email");
         }
@@ -64,8 +68,8 @@ public class EmailServiceImpl implements EmailService {
     public void sendResetPasswordEmail(String token, String userEmail) {
         String emailTemplate;
         try {
-            final File jsonFile = new ClassPathResource("html/reset-password-email.html").getFile();
-            emailTemplate = Files.readString(jsonFile.toPath());
+            Resource resource = new ClassPathResource("html" + File.separator + "reset-password-email.html");
+            emailTemplate = CharStreams.toString(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new EmailException("Failed to send verification email");
         }
